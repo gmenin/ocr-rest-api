@@ -50,21 +50,21 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Product> findProductById(String id) throws DataAccessException {
-		try {
-			return repository.findById(id);
-		} catch (Exception e) {
-			return Optional.empty();
-		}
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public Collection<Product> findAllProducts() throws DataAccessException {
 		try {
 			return repository.findAll();
 		} catch (Exception e) {
 			return null;
+		}
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<Product> findProductById(String id) throws DataAccessException {
+		try {
+			return repository.findById(id);
+		} catch (Exception e) {
+			return Optional.empty();
 		}
 	}
 

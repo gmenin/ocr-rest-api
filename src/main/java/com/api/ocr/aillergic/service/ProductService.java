@@ -30,9 +30,9 @@ import com.api.ocr.aillergic.model.Product;
  */
 public interface ProductService {
 	
-	Optional<Product> findProductById(String id) throws DataAccessException;
-	
 	Collection<Product> findAllProducts() throws DataAccessException;
+	
+	Optional<Product> findProductById(String id) throws DataAccessException;
 	
 	Product saveProduct(Product product) throws DataAccessException;
 	
