@@ -15,6 +15,8 @@
  */
 package com.api.ocr.aillergic.mapper;
 
+import org.springframework.stereotype.Component;
+
 import com.api.ocr.aillergic.model.Product;
 import com.api.ocr.aillergic.rest.dto.ProductResponse;
 
@@ -22,6 +24,7 @@ import com.api.ocr.aillergic.rest.dto.ProductResponse;
  * @author Gabriel Menin (gabrielgm@ufcspa.edu.br)
  * 
  */
+@Component
 public class ProductResponseMapperImpl implements ProductResponseMapper {
 
 	@Override
