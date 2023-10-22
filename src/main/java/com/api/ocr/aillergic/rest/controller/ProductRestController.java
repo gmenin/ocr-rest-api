@@ -40,6 +40,10 @@ import com.api.ocr.aillergic.rest.dto.ProductRequest;
 import com.api.ocr.aillergic.rest.dto.ProductResponse;
 import com.api.ocr.aillergic.service.ProductService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * @author Gabriel Menin (gabrielgm@ufcspa.edu.br)
  * 
@@ -57,6 +61,11 @@ public class ProductRestController {
     @Autowired
     ProductResponseMapper responseMapper;
     
+    @Operation(summary = "Busca por todos os produtos cadastrados na base de dados")
+    @ApiResponses(value = {
+    		@ApiResponse(responseCode = "404", description = "Nenhum produto encontrado"),
+    		@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    })
     @GetMapping(value = "/test", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Collection<Product>> getAllProducts() {	
 		
@@ -73,6 +82,11 @@ public class ProductRestController {
 		return new ResponseEntity<Collection<Product>>(products, HttpStatus.OK);
 	}
     
+    @Operation(summary = "Busca pelo id por um específico produto cadastrado base de dados")
+    @ApiResponses(value = {
+    		@ApiResponse(responseCode = "404", description = "Produto não encontrado"),
+    		@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    })
     @GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Product> getProduct(@PathVariable("id") String id) {
 		
@@ -85,6 +99,11 @@ public class ProductRestController {
 		return new ResponseEntity<Product>(product.get(), HttpStatus.OK);
 	}
     
+    @Operation(summary = "Deleta um específico produto cadastrado base de dados")
+    @ApiResponses(value = {
+    		@ApiResponse(responseCode = "404", description = "Produto não encontrado"),
+    		@ApiResponse(responseCode = "204", description = "Operação realizada com sucesso")
+    })
     @DeleteMapping(value = "/test/{id}")
 	public ResponseEntity<Product> deleteProduct(@PathVariable("id") String id) {
 
@@ -99,6 +118,11 @@ public class ProductRestController {
 		return new ResponseEntity<Product>(HttpStatus.NO_CONTENT);
 	}
     
+    @Operation(summary = "Cadastra um produto na base de dados")
+    @ApiResponses(value = {
+    		@ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+    		@ApiResponse(responseCode = "201", description = "Produto cadastrado com sucesso")
+    })
     @PostMapping(value = "/test", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Product> addProduct(@RequestPart(name = "file") MultipartFile file, @RequestPart(name = "data") ProductRequest productRequest) throws IOException {
 
@@ -119,6 +143,11 @@ public class ProductRestController {
 		return new ResponseEntity<Product>(savedProduct, HttpStatus.CREATED);
 	}
     
+    @Operation(summary = "Extrai o texto do rótulo alimentar presente na imagem")
+    @ApiResponses(value = {
+    		@ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+    		@ApiResponse(responseCode = "200", description = "Operação realizada com sucesso")
+    })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ProductResponse> translateFoodLabelImage(@RequestParam(name = "file") MultipartFile file) throws IOException {
 		
