@@ -22,6 +22,12 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -33,6 +39,7 @@ import com.api.ocr.aillergic.repository.ProductRepository;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import nu.pattern.OpenCV;
 
 /**
  * @author Gabriel Menin (gabrielgm@ufcspa.edu.br)
@@ -88,6 +95,11 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public String extractTextFromImage(MultipartFile image) throws DataAccessException, IOException {
+		
+		OpenCV.loadShared();
+		
+		//Process p = new ProcessBuilder("python", "myScript.py", "firstargument").start();
+		
 		String transcription = "";
 		
 		File file = new File(image.getOriginalFilename());
@@ -96,11 +108,53 @@ public class ProductServiceImpl implements ProductService {
 		fos.write(image.getBytes());
 		fos.close();  
 		
+		Mat destination = new Mat();
+		Mat source = Imgcodecs.imread(file.getAbsolutePath());
+		
+		for (int i = 0; i < 2; i++) {
+			destination = new Mat(source.rows(), source.cols(), source.type());
+			Imgproc.GaussianBlur(source, destination, new Size(0,0), 10);
+			Core.addWeighted(source, 1.5, destination, -0.5, 0, destination);	
+			Imgcodecs.imwrite(file.getAbsolutePath(), destination);
+			source = destination;
+		}
+//		Mat destination = new Mat();
+//		Mat source = Imgcodecs.imread(file.getAbsolutePath());
+//		
+//		destination = new Mat(source.rows(), source.cols(), source.type());
+//		
+//		// Resize the image with INTER_CUBIC interpolation
+//		Size newSize = new Size(source.width() * 2, source.height() * 2);
+//		Imgproc.resize(source, destination, newSize, 0, 0, Imgproc.INTER_CUBIC);
+//
+//		// Convert the resized image to grayscale
+//		Mat grayImage = new Mat(destination.rows(), destination.cols(), destination.type());
+//		Imgproc.cvtColor(destination, grayImage, Imgproc.COLOR_BGR2GRAY);
+//
+//		// Binarize the image
+//		Mat binarizedImage = new Mat(grayImage.rows(), grayImage.cols(), grayImage.type());
+//		Imgproc.threshold(grayImage, binarizedImage, 127, 255, Imgproc.THRESH_BINARY);
+//
+//		// Remove noise from the binarized image (you'll need to implement the remove_noise method)
+//		Mat noiselessImage = new Mat(binarizedImage.rows(), binarizedImage.cols(), binarizedImage.type());
+//		Imgproc.medianBlur(binarizedImage, noiselessImage, 5);
+//		
+//		for (int i = 0; i < 2; i++) {
+//			Mat op = new Mat(noiselessImage.rows(), noiselessImage.cols(), noiselessImage.type());
+//			Imgproc.GaussianBlur(noiselessImage, op, new Size(0,0), 10);
+//			Core.addWeighted(noiselessImage, 1.5, op, -0.5, 0, op);	
+//			Imgcodecs.imwrite(file.getAbsolutePath(), op);
+//			op = destination;
+//		}
+		
 		// Configuracao Tesseract lib
 		Tesseract tesseract = new Tesseract();		
 		tesseract.setDatapath("src/main/resources/tessdata");
 		tesseract.setLanguage("por");
-		
+		tesseract.setOcrEngineMode(1);
+		tesseract.setPageSegMode(6);
+		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç'  '");
+
 		try {
 			// Extracao do texto da imagem
 			transcription = tesseract.doOCR(file);
@@ -109,7 +163,8 @@ public class ProductServiceImpl implements ProductService {
 			e.printStackTrace();
 		}
 		
-		file.delete();
+		//file.delete();
+		System.out.println(transcription);
 		return transcription.replaceAll("\\R", " ");
 	}
 
