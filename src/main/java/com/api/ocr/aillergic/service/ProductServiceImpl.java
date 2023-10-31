@@ -46,6 +46,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.api.ocr.aillergic.model.Product;
 import com.api.ocr.aillergic.repository.ProductRepository;
+import com.api.ocr.aillergic.util.FileUtils;
 
 import net.sourceforge.tess4j.ITessAPI.TessOcrEngineMode;
 import net.sourceforge.tess4j.ITessAPI.TessPageIteratorLevel;
@@ -112,33 +113,18 @@ public class ProductServiceImpl implements ProductService {
 		
 		OpenCV.loadShared();
 		
+		// Tesseract setup
+		Tesseract tesseract = new Tesseract();	
+		tesseract.setDatapath("src/main/resources/tessdata");
+		tesseract.setLanguage("por");
+		tesseract.setOcrEngineMode(TessOcrEngineMode.OEM_LSTM_ONLY);
+		tesseract.setPageSegMode(TessPageSegMode.PSM_SINGLE_BLOCK);
+		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç.:,!()'  '");
+		
 		String transcription = "";
 		
-		File file = new File(image.getOriginalFilename());
-		file.createNewFile();
-		FileOutputStream fos = new FileOutputStream(file);
-		fos.write(image.getBytes());
-		fos.close();  
+		File file = FileUtils.createFile(image);
 		
-//		String scriptPath = "src/main/resources/script/rotate.py";
-//	    ProcessBuilder pb = new ProcessBuilder("python", scriptPath, file.getAbsolutePath()).inheritIO();
-//
-//	    Process demoProcess = pb.start();
-//	    try {
-//			demoProcess.waitFor();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//	    BufferedReader Buffered_Reader =
-//	        new BufferedReader(new InputStreamReader(demoProcess.getInputStream()));
-//	    String output = "";
-//
-//	    while ((output = Buffered_Reader.readLine()) != null) {
-//	      System.out.println(output);
-//	    }
-	    
 		Mat destination = new Mat();
 		Mat source = Imgcodecs.imread(file.getAbsolutePath());
 		
@@ -149,56 +135,17 @@ public class ProductServiceImpl implements ProductService {
 			Imgcodecs.imwrite(file.getAbsolutePath(), destination);
 			source = destination;
 		}
-//		Mat destination = new Mat();
-//		Mat source = Imgcodecs.imread(file.getAbsolutePath());
-//		
-//		destination = new Mat(source.rows(), source.cols(), source.type());
-//		
-//		// Resize the image with INTER_CUBIC interpolation
-//		Size newSize = new Size(source.width() * 2, source.height() * 2);
-//		Imgproc.resize(source, destination, newSize, 0, 0, Imgproc.INTER_CUBIC);
-//
-//		// Convert the resized image to grayscale
-//		Mat grayImage = new Mat(destination.rows(), destination.cols(), destination.type());
-//		Imgproc.cvtColor(destination, grayImage, Imgproc.COLOR_BGR2GRAY);
-//
-//		// Binarize the image
-//		Mat binarizedImage = new Mat(grayImage.rows(), grayImage.cols(), grayImage.type());
-//		Imgproc.threshold(grayImage, binarizedImage, 127, 255, Imgproc.THRESH_BINARY);
-//
-//		// Remove noise from the binarized image (you'll need to implement the remove_noise method)
-//		Mat noiselessImage = new Mat(binarizedImage.rows(), binarizedImage.cols(), binarizedImage.type());
-//		Imgproc.medianBlur(binarizedImage, noiselessImage, 5);
-//		
-//		for (int i = 0; i < 2; i++) {
-//			Mat op = new Mat(noiselessImage.rows(), noiselessImage.cols(), noiselessImage.type());
-//			Imgproc.GaussianBlur(noiselessImage, op, new Size(0,0), 10);
-//			Core.addWeighted(noiselessImage, 1.5, op, -0.5, 0, op);	
-//			Imgcodecs.imwrite(file.getAbsolutePath(), op);
-//			op = destination;
-//		}
-		
-
-		// Configuracao Tesseract lib
-		Tesseract tesseract = new Tesseract();	
-		tesseract.setDatapath("src/main/resources/tessdata");
-		tesseract.setLanguage("por");
-		tesseract.setOcrEngineMode(TessOcrEngineMode.OEM_LSTM_ONLY);
-		tesseract.setPageSegMode(TessPageSegMode.PSM_SINGLE_BLOCK);
-		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç.:,!'  '");
-		
-		
-		/*try {
-			// Extracao do texto da imagem
-			transcription = tesseract.doOCR(file);
-			 
+			
+		try {
+			// Extracting text from image
+			transcription = tesseract.doOCR(file);		 
 		} catch (TesseractException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
-		//file.delete();
-		System.out.println(transcription);
+		
+		file.delete();
+		
 		return transcription.replaceAll("\\R", " ");
 	}
 
