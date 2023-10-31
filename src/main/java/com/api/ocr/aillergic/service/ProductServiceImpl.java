@@ -15,11 +15,20 @@
  */
 package com.api.ocr.aillergic.service;
 
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.opencv.core.Core;
@@ -28,6 +37,7 @@ import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.python.util.PythonInterpreter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -37,8 +47,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.ocr.aillergic.model.Product;
 import com.api.ocr.aillergic.repository.ProductRepository;
 
+import net.sourceforge.tess4j.ITessAPI.TessOcrEngineMode;
+import net.sourceforge.tess4j.ITessAPI.TessPageIteratorLevel;
+import net.sourceforge.tess4j.ITessAPI.TessPageSegMode;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import net.sourceforge.tess4j.Word;
 import nu.pattern.OpenCV;
 
 /**
@@ -98,8 +112,6 @@ public class ProductServiceImpl implements ProductService {
 		
 		OpenCV.loadShared();
 		
-		//Process p = new ProcessBuilder("python", "myScript.py", "firstargument").start();
-		
 		String transcription = "";
 		
 		File file = new File(image.getOriginalFilename());
@@ -108,6 +120,25 @@ public class ProductServiceImpl implements ProductService {
 		fos.write(image.getBytes());
 		fos.close();  
 		
+//		String scriptPath = "src/main/resources/script/rotate.py";
+//	    ProcessBuilder pb = new ProcessBuilder("python", scriptPath, file.getAbsolutePath()).inheritIO();
+//
+//	    Process demoProcess = pb.start();
+//	    try {
+//			demoProcess.waitFor();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//	    BufferedReader Buffered_Reader =
+//	        new BufferedReader(new InputStreamReader(demoProcess.getInputStream()));
+//	    String output = "";
+//
+//	    while ((output = Buffered_Reader.readLine()) != null) {
+//	      System.out.println(output);
+//	    }
+	    
 		Mat destination = new Mat();
 		Mat source = Imgcodecs.imread(file.getAbsolutePath());
 		
@@ -147,22 +178,25 @@ public class ProductServiceImpl implements ProductService {
 //			op = destination;
 //		}
 		
+
 		// Configuracao Tesseract lib
-		Tesseract tesseract = new Tesseract();		
+		Tesseract tesseract = new Tesseract();	
 		tesseract.setDatapath("src/main/resources/tessdata");
 		tesseract.setLanguage("por");
-		tesseract.setOcrEngineMode(1);
-		tesseract.setPageSegMode(6);
-		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç'  '");
-
-		try {
+		tesseract.setOcrEngineMode(TessOcrEngineMode.OEM_LSTM_ONLY);
+		tesseract.setPageSegMode(TessPageSegMode.PSM_SINGLE_BLOCK);
+		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç.:,!'  '");
+		
+		
+		/*try {
 			// Extracao do texto da imagem
 			transcription = tesseract.doOCR(file);
+			 
 		} catch (TesseractException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		*/
 		//file.delete();
 		System.out.println(transcription);
 		return transcription.replaceAll("\\R", " ");
