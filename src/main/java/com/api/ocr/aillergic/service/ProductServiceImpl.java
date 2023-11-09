@@ -119,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
 		tesseract.setLanguage("por");
 		tesseract.setOcrEngineMode(TessOcrEngineMode.OEM_LSTM_ONLY);
 		tesseract.setPageSegMode(TessPageSegMode.PSM_SINGLE_BLOCK);
-		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç.:,!()'  '");
+		tesseract.setVariable("tessedit_char_whitelist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚãÃõÕâÂêÊôÔç.:,!()-'  '");
 		
 		String transcription = "";
 		
