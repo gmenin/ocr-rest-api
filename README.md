@@ -59,4 +59,4 @@ $ gradle test
 
 
 ## OpenAPI REST API documentation presented here (after application start):
-You can reach the swagger UI with this URL http://localhost:8080/aillergic.
+You can reach the swagger UI with this URL http://localhost:8080/.
